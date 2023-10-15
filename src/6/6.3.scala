@@ -48,9 +48,6 @@ def parseShows(rawShows: List[String]): Either[String, List[TvShow]] =
 def sortShows(shows: List[TvShow]): List[TvShow] =
   shows.sortBy(tvShow => tvShow.end - tvShow.start).reverse
 
-def sortRawShows(rawShows: List[String]): List[TvShow] =
-  sortShows(parseShows(rawShows))
-
 def extractSingleYear(rawShow: String): Either[String, Int] =
   val dash = rawShow.indexOf('-')
   val bracketOpen = rawShow.indexOf('(')
@@ -63,27 +60,3 @@ def extractSingleYear(rawShow: String): Either[String, Int] =
       else Left(s"Can't extract single year from $rawShow")
     year <- yearStr.toIntOption.toRight(s"Can't parse $yearStr")
   } yield year
-
-def extractSingleYearOrYearEnd(rawShow: String): Option[Int] =
-  extractSingleYear(rawShow).orElse(extractYearEnd(rawShow))
-
-def extractAnyYear(rawShow: String): Option[Int] =
-  extractYearStart(rawShow)
-    .orElse(extractYearEnd(rawShow))
-    .orElse(extractSingleYear(rawShow))
-
-def extractSingleYearIfNameExists(rawShow: String): Option[Int] =
-  extractName(rawShow).flatMap(_ => extractSingleYear(rawShow))
-
-def extractAnyYearIfNameExists(rawShow: String): Option[Int] =
-  extractName(rawShow).flatMap(_ => extractAnyYear(rawShow))
-
-def addOrResign(
-    parsedShows: Option[TvShow],
-    newParsedShows: Option[TvShow]
-): Option[TvShow] =
-  parsedShows.map(tvShow =>
-    if (tvShow.name.endsWith(" (US)"))
-      tvShow.copy(name = tvShow.name.dropRight(5))
-    else tvShow.copy(name = tvShow.name + " (US)")
-  )
